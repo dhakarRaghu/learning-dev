@@ -7,7 +7,7 @@ const userRouter = require("./routes/user");
 // Middleware for parsing request bodies
 app.use(bodyParser.json());
 app.use("/admin", adminRouter)
-// app.use("/user", userRouter)
+app.use("/user", userRouter)
 
 const PORT = 3000;
 
