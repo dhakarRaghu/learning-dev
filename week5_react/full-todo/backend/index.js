@@ -52,7 +52,7 @@ app.post("/todo", async function (req, res) {
 
 app.put("/completed", async function (req, res) {
     const updatePayLoad = req.body;
-    const parsePayLoad = updateTodo.safeParse(updatePayLoad);
+    const parsePayLoad = updateTodo.safeParse(updatePayLoad);j
 
     if (!parsePayLoad.success) {
         res.status(411).json({
