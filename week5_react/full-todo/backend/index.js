@@ -1,11 +1,12 @@
 const express = require("express");
 const { createTodo, updateTodo } = require("./types");
+const cors = require('cors');
 const { todo } = require("./db");
 const mongoose = require("mongoose");
 const app = express();
 
 app.use(express.json());
-app.use(cors);
+app.use(cors());
 
 app.get("/todo", async function (req, res) {
     try {
@@ -33,7 +34,7 @@ app.post("/todo", async function (req, res) {
         return;
     }
 
-    try {
+    // try {
         await todo.create({
             title: createPayLoad.title, 
             description: createPayLoad.description,
@@ -42,12 +43,12 @@ app.post("/todo", async function (req, res) {
         res.json({
             msg: "Todo is created",
         });
-    } catch (error) {
-        res.status(500).json({
-            msg: "Error creating todo",
-            error:error
-        });
-    }
+    // } catch (error) {
+    //     res.status(500).json({
+    //         msg: "Error creating todo",
+    //         error:error
+    //     });
+    // }
 });
 
 app.put("/completed", async function (req, res) {
