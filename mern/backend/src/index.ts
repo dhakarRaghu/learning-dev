@@ -1,8 +1,11 @@
 import express from 'express';
 import { appRouter } from './routes';
+import { connectToDatabase } from './db/connection';
+import { errorHandler } from './middleware/errorMiddleware';
 
 const app = express();
 app.use(express.json());
+app.use(errorHandler)
 
 app.use("/api", appRouter);
 
@@ -20,6 +23,9 @@ app.use("/api", appRouter);
 //   res.send('Hello World ' + req.params.id);
 // });
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
+const PORT = 5001;
+connectToDatabase()
+.then(() => {
+    app.listen(PORT, () =>
+    console.log("Server is running on port " + PORT));
+})
