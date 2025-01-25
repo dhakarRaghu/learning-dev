@@ -1,34 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+interface UrlData {
+  _id: string;
+  short_url: string;
+  redirect_url: string;
+  visitHistory: { timestamp: string; _id: string }[];
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [urls, setUrls] = useState<UrlData[]>([]) // State to store the array of URLs
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5001/api/shorturl/allUrls")
+      .then((response: any) => {
+        setUrls(response.data) // Save the array of URL objects to state
+      })
+      .catch((error: any) => {
+        console.error("Error fetching data:", error)
+      })
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <h1>Shortened URLs</h1>
+      {urls.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <ul>
+          {urls.map((url) => (
+            <li key={url._id}>
+              <p><strong>Short URL:</strong> {url.short_url}</p>
+              <p><strong>Redirect URL:</strong> {url.redirect_url}</p>
+              <p><strong>Visit History:</strong></p>
+              <ul>
+                {url.visitHistory.length > 0 ? (
+                  url.visitHistory.map((visit) => (
+                    <li key={visit._id}>
+                      {new Date(visit.timestamp).toLocaleString()}
+                    </li>
+                  ))
+                ) : (
+                  <li>No visits yet.</li>
+                )}
+              </ul>
+              <hr />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 

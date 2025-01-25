@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenerateShortUrl = GenerateShortUrl;
 exports.GetVisited = GetVisited;
+exports.allUrls = allUrls;
 const user_1 = require("../models/user");
 const nanoid_1 = require("nanoid");
 // Generate Short URL
@@ -59,6 +60,17 @@ function GetVisited(req, res, next) {
         }
         catch (error) {
             next(error); // Pass the error to the error-handling middleware
+        }
+    });
+}
+function allUrls(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const urls = yield user_1.Url.find();
+            res.json(urls);
+        }
+        catch (error) {
+            next(error);
         }
     });
 }

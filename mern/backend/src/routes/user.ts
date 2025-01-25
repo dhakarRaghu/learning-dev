@@ -1,9 +1,9 @@
 import { Router } from 'express';
+import { CreateUser, GetAllUser } from '../controlleres/Users';
 
 const userRoutes = Router();
 
-userRoutes.get('/', (req, res) => {
-    res.send('Hello World');
-});
+userRoutes.post('/', CreateUser);
+userRoutes.get('/getall', GetAllUser);
 
 export { userRoutes };

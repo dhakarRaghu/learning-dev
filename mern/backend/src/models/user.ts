@@ -20,4 +20,23 @@ const UrlSchema = new Schema({
     ],
 });
 
-export const Url = mongoose.model('Url', UrlSchema);
+const userSchema = new Schema({
+    username: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+   password : {
+        type : String,
+        required : true
+   }
+});
+
+const Url = mongoose.model('Url', UrlSchema);
+const User = mongoose.model('user', userSchema);
+
+export {Url , User}

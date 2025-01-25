@@ -9,31 +9,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectToDatabase = connectToDatabase;
-exports.disconnectFromDatabase = disconnectFromDatabase;
-const mongoose_1 = require("mongoose");
-function connectToDatabase() {
+exports.CreateUser = CreateUser;
+exports.GetAllUser = GetAllUser;
+const user_1 = require("../models/user");
+function CreateUser(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const mon_url = process.env.MONGODB_URL;
-            yield (0, mongoose_1.connect)(mon_url);
-            console.log('Connected to the database');
+            const { username, email, password } = req.body;
+            if (!username || !email || !password) {
+                res.status(400).json({ message: 'All fields are required' });
+                return;
+            }
+            yield user_1.User.create({
+                username,
+                email,
+                password,
+            });
+            res.json({ message: 'User created successfully' });
         }
         catch (error) {
-            console.log(error);
-            throw new Error('Error connecting to the database');
+            next(error);
         }
     });
 }
-function disconnectFromDatabase() {
+function GetAllUser(_, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
+        // res.json({ message: 'Hello World' });
         try {
-            yield (0, mongoose_1.disconnect)();
-            console.log('Disconnected from the database');
+            const users = yield user_1.User.find();
+            res.json(users);
         }
         catch (error) {
-            console.log(error);
-            throw new Error('Error disconnecting from the database');
+            next(error);
         }
     });
 }

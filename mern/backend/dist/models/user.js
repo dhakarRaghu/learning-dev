@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Url = void 0;
+exports.User = exports.Url = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const UrlSchema = new mongoose_1.Schema({
     short_url: {
@@ -54,4 +54,22 @@ const UrlSchema = new mongoose_1.Schema({
         },
     ],
 });
-exports.Url = mongoose_1.default.model('Url', UrlSchema);
+const userSchema = new mongoose_1.Schema({
+    username: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true
+    }
+});
+const Url = mongoose_1.default.model('Url', UrlSchema);
+exports.Url = Url;
+const User = mongoose_1.default.model('user', userSchema);
+exports.User = User;

@@ -54,3 +54,12 @@ export async function GetVisited(req: Request, res: Response, next: NextFunction
         next(error); // Pass the error to the error-handling middleware
     }
 }
+
+export async function allUrls(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const urls = await Url.find();
+        res.json(urls);
+    } catch (error) {
+        next(error);
+    }
+}
