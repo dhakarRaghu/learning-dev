@@ -15,10 +15,8 @@ const mongoose_1 = require("mongoose");
 function connectToDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // if (!process.env.MONGODB_URL) {
-            //     throw new Error('MONGODB_URL is not defined');
-            // }
-            yield (0, mongoose_1.connect)("mongodb+srv://chat-bot:chat-bot@cluster0.hv1du.mongodb.net/mern");
+            const mon_url = process.env.MONGODB_URL;
+            yield (0, mongoose_1.connect)(mon_url);
             console.log('Connected to the database');
         }
         catch (error) {

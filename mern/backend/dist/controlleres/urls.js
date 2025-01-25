@@ -42,7 +42,6 @@ function GetVisited(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { shortId } = req.params;
-            console.log(shortId);
             const entry = yield user_1.Url.findOneAndUpdate({ short_url: shortId }, {
                 $push: {
                     visitHistory: {

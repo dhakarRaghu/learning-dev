@@ -2,10 +2,9 @@ import {connect , disconnect} from 'mongoose';
 
  async function connectToDatabase(){
     try {
-        // if (!process.env.MONGODB_URL) {
-        //     throw new Error('MONGODB_URL is not defined');
-        // }
-        await connect("mongodb+srv://chat-bot:chat-bot@cluster0.hv1du.mongodb.net/mern");
+
+       const  mon_url = process.env.MONGODB_URL as string;
+        await connect(mon_url);
         console.log('Connected to the database');
         }
     catch (error){
@@ -17,9 +16,6 @@ import {connect , disconnect} from 'mongoose';
 
      async function  disconnectFromDatabase(){
         try {
-            // if (!process.env.MONGODB_URL) {
-            //     throw new Error('MONGODB_URL is not defined');
-            // }
             await disconnect();
             console.log('Disconnected from the database');
             }
