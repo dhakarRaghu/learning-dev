@@ -4,10 +4,13 @@ import { connectToDatabase } from './db/connection';
 import { errorHandler } from './middleware/errorMiddleware';
 import dotenv from 'dotenv';
 import cors from "cors";
+import './libs/discord'
+
 
 const app = express();
 app.use(express.json());
 app.use(errorHandler)
+
 app.use(cors({origin: "http://localhost:5173", credentials: true})); 
 
 dotenv.config();  // so that we can use process.env to access environment variables

@@ -12,8 +12,7 @@ function App() {
   const [urls, setUrls] = useState<UrlData[]>([]) // State to store the array of URLs
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5001/api/shorturl/allUrls")
+    axios.get("http://localhost:5001/api/shorturl/allUrls")
       .then((response: any) => {
         setUrls(response.data) // Save the array of URL objects to state
       })

@@ -9,6 +9,7 @@ const connection_1 = require("./db/connection");
 const errorMiddleware_1 = require("./middleware/errorMiddleware");
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
+require("./libs/discord");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(errorMiddleware_1.errorHandler);
