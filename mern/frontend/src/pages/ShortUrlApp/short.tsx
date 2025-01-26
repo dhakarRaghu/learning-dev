@@ -18,8 +18,7 @@ const Short = () => {
     try {
       const response = await axios.post('http://localhost:5001/api/shorturl', { url });
       console.log('Shortened URL:', response.data);
-
-      setShortenedUrl(response.data.shortUrl); // Set the shortened URL
+            setShortenedUrl(response.data.shortUrl); // Set the shortened URL
       setUrl(''); // Clear the input field
       setSuccess(true); // Set success state
     } catch (error) {
@@ -32,13 +31,18 @@ const Short = () => {
   // Fetch all URLs handler
   const handleAllUrl = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/shorturl/allUrls');
+      const response = await axios.get<UrlType[]>('http://localhost:5001/api/shorturl/allUrls');
       setLongUrl(response.data); // Update state with all URLs
     } catch (error) {
       console.error('Error fetching all URLs:', error);
       alert('Failed to fetch all URLs. Please try again.');
     }
   };
+
+  // Fetch all URLs on component mount
+  // React.useEffect(() => {
+  //   handleShortenUrl();
+  // }, [shortenedUrl]);
 
 
   return (

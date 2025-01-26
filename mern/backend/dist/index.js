@@ -13,6 +13,7 @@ require("./libs/discord");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(errorMiddleware_1.errorHandler);
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({ origin: "http://localhost:5173", credentials: true }));
 dotenv_1.default.config(); // so that we can use process.env to access environment variables
 app.use("/api", routes_1.appRouter);
