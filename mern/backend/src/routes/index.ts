@@ -1,9 +1,11 @@
 import express from 'express';
 import { userRoutes } from './User';
-import { todoRoutes } from './todo';
 import { urlRoutes } from './url';
 
 import multer from 'multer';  // for storing files
+import { blogRoutes } from './blog';
+import { userLogin, userSignup } from '../controlleres/loginUser';
+import { authenticateToken } from './mid_check';
 
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
@@ -24,9 +26,13 @@ const storage = multer.diskStorage({
 
 const appRouter = express.Router();
 
-appRouter.use('/user', userRoutes);
-appRouter.use('/todo', todoRoutes);
-appRouter.use('/shorturl', urlRoutes);
+appRouter.post('/login', userLogin);
+appRouter.post('/signup' , userSignup);
+
+appRouter.use('/user', authenticateToken, userRoutes);
+appRouter.use('/blog' , authenticateToken, blogRoutes);
+appRouter.use('/shorturl',authenticateToken ,  urlRoutes);
+
 appRouter.post('/upload', upload.single('file'), (req, res) => {
     try {
       console.log('File uploaded:', req.file);

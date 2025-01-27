@@ -18,7 +18,7 @@ const Short = () => {
     try {
       const response = await axios.post('http://localhost:5001/api/shorturl', { url });
       console.log('Shortened URL:', response.data);
-            setShortenedUrl(response.data.shortUrl); // Set the shortened URL
+        setShortenedUrl(response.data.shortUrl); // Set the shortened URL
       setUrl(''); // Clear the input field
       setSuccess(true); // Set success state
     } catch (error) {

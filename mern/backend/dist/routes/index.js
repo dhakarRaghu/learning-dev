@@ -6,22 +6,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.appRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const User_1 = require("./User");
-const todo_1 = require("./todo");
 const url_1 = require("./url");
 const multer_1 = __importDefault(require("multer")); // for storing files
+const blog_1 = require("./blog");
+const loginUser_1 = require("../controlleres/loginUser");
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         return cb(null, './uploads');
     },
     filename: function (req, file, cb) {
-        return cb(null, `${Date.now()}-${file.originalname}`);
+        return cb(null, `${Date.now()}-${file.originalname}`); // for proper format -${file.originalname}
     }
 });
 const upload = (0, multer_1.default)({ storage: storage });
 const appRouter = express_1.default.Router();
 exports.appRouter = appRouter;
+appRouter.post('/login', loginUser_1.userLogin);
+appRouter.post('/signup', loginUser_1.userSignup);
 appRouter.use('/user', User_1.userRoutes);
-appRouter.use('/todo', todo_1.todoRoutes);
+appRouter.use('/blog', blog_1.blogRoutes);
 appRouter.use('/shorturl', url_1.urlRoutes);
 appRouter.post('/upload', upload.single('file'), (req, res) => {
     try {
