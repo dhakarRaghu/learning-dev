@@ -1,26 +1,53 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("struct and no classes in GoLang")
+	fmt.Println("struct and no dsadf classes in GoLang")
 
-	raghu := User{
-		FirstName: "Raghu",
-		LastName:  "Ram",
-		Email:     "easfsd",
-		Age:       21,
-	}
-	fmt.Println("User:", raghu)
-	fmt.Printf("detail %+v\n", raghu)  // %+v will print the field names "f"
-	fmt.Println("User:", raghu.FirstName)
+	fmt.Println("Json in GoLang")
+	EncodeJson()
+	// raghu := User{
+	// 	FirstName: "Raghu",
+	// 	LastName:  "Ram",
+	// 	Email:     "easfsd",
+	// 	Age:       21,
+	// }
+	// fmt.Println("User:", raghu)
+	// fmt.Printf("detail %+v\n", raghu)  // %+v will print the field names "f"
+	// fmt.Println("User:", raghu.FirstName)
+
 }
-
-// Structs are a way to define a new type that is a collection of named fields.
 
 type User struct {
 	FirstName string
 	LastName  string
 	Email     string
 	Age       int
+}
+
+type course struct {
+	Name     string
+	Price    int
+	Platform string
+	Tags     []string
+}
+
+func EncodeJson() {
+
+	lcoUser := []course{
+		{"React", 0, "Udemy", nil},
+		{"Angular", 0, "Udemy", []string{"web-dev", "google", "js"}},
+		{"Golang", 0, "Youtube", []string{"web-dev", "go"}},
+	}
+
+	finalJson, err := json.Marshal(lcoUser)
+	if err != nil {
+		fmt.Println("Error in marshalling")
+	}
+	fmt.Println("jhblh" ,string(finalJson))
+
 }
