@@ -13,6 +13,8 @@ app.get("/", (req, res) => {
     })
 })
 
+
+
 app.post("/", async (req, res) => {
     await client.user.create({
         data: {
@@ -25,6 +27,8 @@ app.post("/", async (req, res) => {
         message: "Done signing  up !"
     })
 })
+
+
 
 app.listen(3000 ,() =>{
     console.log("Server is running on port 3000");
