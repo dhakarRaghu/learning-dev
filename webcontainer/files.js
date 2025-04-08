@@ -1,5 +1,4 @@
 /** @satisfies {import('@webcontainer/api').FileSystemTree} */
-
 export const files = {
     "index.js": {
       file: {
@@ -14,7 +13,8 @@ export const files = {
   
   app.listen(port, () => {
     console.log(\`App is live at http://localhost:\${port}\`);
-  });`,
+  });
+        `.trim(),
       },
     },
     "package.json": {
@@ -30,7 +30,8 @@ export const files = {
     "scripts": {
       "start": "nodemon --watch './' index.js"
     }
-  }`,
+  }
+        `.trim(),
       },
     },
   };

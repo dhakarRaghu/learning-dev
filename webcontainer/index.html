@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Markdown Previewer with WebContainer</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebContainer App</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <div class="editor">
-            <h2>Markdown Input</h2>
-            <textarea id="editor">Type your Markdown here...</textarea>
-        </div>
-        <div class="preview">
-            <h2>Preview</h2>
-            <iframe id="preview" src="loading.html"></iframe>
-        </div>
-        <div class="logs">
-            <h2>Server Logs</h2>
-            <pre id="logOutput"></pre>
-        </div>
-    </div>
-    <script type="module" src="/main.js"></script>
+  <h1>WebContainer Playground 🚀</h1>
+
+  <div class="container ">
+      <div class="editor">
+        <label for="code">index.js</label>
+        <textarea id="code" rows="20" cols="80"></textarea>
+      </div>
+    
+      <div class="preview">
+        <h2>Live Preview</h2>
+        <iframe id="preview" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+
+  </div>
+
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

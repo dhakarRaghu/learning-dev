@@ -1,143 +1,73 @@
-import { WebContainer } from '@webcontainer/api';
+import "./style.css";
+import { WebContainer } from "@webcontainer/api";
+import { files } from "./files";
 
-// Define the project files to mount in the WebContainer
-const projectFiles = {
-    'index.js': {
-        file: {
-            contents: `
-                import express from 'express';
-                import { marked } from 'marked';
-                const app = express();
-                const port = 3111;
+/** @type {import('@webcontainer/api').WebContainer} */
+let webcontainerInstance;
 
-                app.use(express.json());
+const textareaEl = document.querySelector("textarea");
+const iframeEl = document.querySelector("iframe");
 
-                // Endpoint to get rendered HTML from Markdown
-                app.get('/preview', (req, res) => {
-                    const markdown = req.query.text;
-                    const html = marked.parse(markdown);
-                    console.log('Rendering Markdown:', markdown.substring(0, 20) + '...');
-                    res.send(\`
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <style>
-                                body { margin: 20px; font-family: Arial, sans-serif; }
-                            </style>
-                        </head>
-                        <body>\${html}</body>
-                        </html>
-                    \`);
-                });
-
-                app.listen(port, () => {
-                    console.log('Server running at http://localhost:' + port);
-                });
-
-                // Handle server errors
-                process.on('uncaughtException', (error) => {
-                    console.error('Uncaught Exception:', error.message);
-                });
-            `,
-        },
-    },
-    'package.json': {
-        file: {
-            contents: `
-                {
-                    "name": "markdown-previewer",
-                    "type": "module",
-                    "dependencies": {
-                        "express": "latest",
-                        "marked": "latest"
-                    },
-                    "scripts": {
-                        "start": "node index.js"
-                    }
-                }
-            `,
-        },
-    },
-};
-
-// Get DOM elements
-const textarea = document.querySelector('#editor');
-const iframe = document.querySelector('#preview');
-const logOutput = document.querySelector('#logOutput');
-
-// Boot WebContainer and run the server
-async function startWebContainer() {
-    const webcontainer = await WebContainer.boot();
-    await webcontainer.mount(projectFiles);
-
-    // Install dependencies
-    const installProcess = await webcontainer.spawn('npm', ['install']);
-    await installProcess.exit;
-    console.log('npm install completed');
-
-    // Start the server
-    const serverProcess = await webcontainer.spawn('npm', ['run', 'start']);
-    serverProcess.output.pipeTo(
-        new WritableStream({
-            write(data) {
-                logOutput.textContent += data + '\n'; // Append to logOutput
-            },
-        })
-    );
-
-    // Listen for the server to be ready with timeout
-    return new Promise((resolve) => {
-        webcontainer.on('server-ready', (port, url) => {
-            serverUrl = url;
-            console.log('Server URL:', url);
-            updatePreview(); // Initial preview
-            resolve();
-        });
-
-        setTimeout(() => {
-            console.error('Server ready event timed out');
-            if (!serverUrl) {
-                console.warn('Using fallback URL (may not work)');
-                serverUrl = 'http://localhost:3111';
-            }
-            updatePreview();
-            resolve();
-        }, 10000);
-
-        // Check server process exit
-        serverProcess.exit.then((code) => {
-            if (code !== 0) {
-                console.error('Server process exited with code:', code);
-            }
-        });
-    });
+/** @param {string} content */
+async function writeIndexJS(content) {
+  await webcontainerInstance.fs.writeFile("/index.js", content);
 }
 
-let serverUrl = '';
+window.addEventListener("load", async () => {
+  textareaEl.value = files["index.js"].file.contents;
 
-// Update the preview iframe with rendered Markdown
-function updatePreview() {
-    const markdown = textarea.value;
-    if (serverUrl) {
-        iframe.src = `${serverUrl}/preview?text=${encodeURIComponent(markdown)}`;
-    } else {
-        console.error('Server URL not set');
-        iframe.src = 'about:blank'; // Clear iframe on error
-    }
+  textareaEl.addEventListener("input", (e) => {
+    writeIndexJS(e.currentTarget.value);
+  });
+
+  // Boot the WebContainer
+  webcontainerInstance = await WebContainer.boot();
+
+  // Mount the file system
+  await webcontainerInstance.mount(files);
+
+  // Install dependencies
+  const exitCode = await installDependencies();
+  if (exitCode !== 0) {
+    throw new Error("Installation failed");
+  }
+
+  const packageJSON = await webcontainerInstance.fs.readFile(
+    "package.json",
+    "utf-8"
+  );
+  console.log(packageJSON);
+
+  // Start dev server
+  startDevServer();
+});
+
+async function installDependencies() {
+  const installProcess = await webcontainerInstance.spawn("npm", ["install"]);
+
+  installProcess.output.pipeTo(
+    new WritableStream({
+      write(data) {
+        console.log(data);
+      },
+    })
+  );
+
+  return installProcess.exit;
 }
 
-// Event listener for textarea changes
-textarea.addEventListener('input', debounce(updatePreview, 300));
+async function startDevServer() {
+  const serverProcess = await webcontainerInstance.spawn("npm", ["run", "start"]);
 
-// Debounce function to limit preview updates
-function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
+  serverProcess.output.pipeTo(
+    new WritableStream({
+      write(data) {
+        console.log(data);
+      },
+    })
+  );
+
+  webcontainerInstance.on("server-ready", (port, url) => {
+    iframeEl.src = url;
+  });
 }
-
-// Start the app
-window.addEventListener('load', startWebContainer);
