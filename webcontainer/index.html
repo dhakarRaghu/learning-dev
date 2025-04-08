@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Previewer with WebContainer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="editor">
+            <h2>Markdown Input</h2>
+            <textarea id="editor">Type your Markdown here...</textarea>
+        </div>
+        <div class="preview">
+            <h2>Preview</h2>
+            <iframe id="preview" src="loading.html"></iframe>
+        </div>
+        <div class="logs">
+            <h2>Server Logs</h2>
+            <pre id="logOutput"></pre>
+        </div>
+    </div>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+    "name": "markdown-previewer",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@webcontainer/api": "latest",
+        "marked": "latest"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0"
+    }
+}
