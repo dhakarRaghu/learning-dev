@@ -1,0 +1,351 @@
+// File: index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Session Recorder & Replayer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .recording-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: red;
+      animation: pulse 1.5s infinite;
+      z-index: 9999;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    .demo-area {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      min-height: 300px;
+    }
+    
+    .replay-container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 300px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.4/dist/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.4/dist/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.21.4/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    const App = () => {
+      const [recording, setRecording] = useState(false);
+      const [events, setEvents] = useState([]);
+      const [savedSessions, setSavedSessions] = useState([]);
+      const [currentSession, setCurrentSession] = useState(null);
+      const [replayMode, setReplayMode] = useState(false);
+      const stopFnRef = useRef(null);
+      const replayContainerRef = useRef(null);
+      const replayerRef = useRef(null);
+      
+      // Load saved sessions from localStorage on component mount
+      useEffect(() => {
+        const loadSavedSessions = () => {
+          const savedSessionsData = localStorage.getItem('rrweb-sessions');
+          if (savedSessionsData) {
+            try {
+              const parsedSessions = JSON.parse(savedSessionsData);
+              setSavedSessions(parsedSessions);
+            } catch (error) {
+              console.error("Error loading saved sessions:", error);
+            }
+          }
+        };
+        
+        loadSavedSessions();
+      }, []);
+      
+      // Start recording function
+      const startRecording = () => {
+        const newEvents = [];
+        
+        // Initialize rrweb recording
+        const stopFn = rrweb.record({
+          emit(event) {
+            newEvents.push(event);
+            setEvents([...newEvents]);
+          },
+        });
+        
+        stopFnRef.current = stopFn;
+        setEvents(newEvents);
+        setRecording(true);
+      };
+      
+      // Stop recording function
+      const stopRecording = () => {
+        if (stopFnRef.current) {
+          stopFnRef.current();
+          stopFnRef.current = null;
+        }
+        setRecording(false);
+      };
+      
+      // Save current recording to localStorage
+      const saveRecording = () => {
+        if (events.length === 0) return;
+        
+        const sessionName = prompt("Enter a name for this session:", `Session ${savedSessions.length + 1}`);
+        if (!sessionName) return;
+        
+        const newSession = {
+          id: Date.now().toString(),
+          name: sessionName,
+          timestamp: new Date().toISOString(),
+          events: events
+        };
+        
+        const updatedSessions = [...savedSessions, newSession];
+        localStorage.setItem('rrweb-sessions', JSON.stringify(updatedSessions));
+        setSavedSessions(updatedSessions);
+        
+        // Clear current events
+        setEvents([]);
+      };
+      
+      // Delete a saved session
+      const deleteSession = (sessionId) => {
+        const updatedSessions = savedSessions.filter(session => session.id !== sessionId);
+        localStorage.setItem('rrweb-sessions', JSON.stringify(updatedSessions));
+        setSavedSessions(updatedSessions);
+        
+        if (currentSession && currentSession.id === sessionId) {
+          setCurrentSession(null);
+          setReplayMode(false);
+          
+          if (replayerRef.current) {
+            try {
+              replayerRef.current.pause();
+            } catch (e) {
+              console.error("Error stopping replayer:", e);
+            }
+            replayerRef.current = null;
+          }
+        }
+      };
+      
+      // Play a saved session
+      const playSession = (session) => {
+        setCurrentSession(session);
+        setReplayMode(true);
+        
+        // Use setTimeout to ensure the replay container is rendered
+        setTimeout(() => {
+          if (replayContainerRef.current && session.events.length > 0) {
+            // Clear previous replayer instance
+            if (replayerRef.current) {
+              try {
+                replayerRef.current.pause();
+              } catch (e) {
+                console.error("Error stopping previous replayer:", e);
+              }
+            }
+            
+            // Initialize the replayer with the session events
+            try {
+              replayerRef.current = new rrwebPlayer.Replayer(session.events, {
+                root: replayContainerRef.current,
+                width: replayContainerRef.current.clientWidth,
+                height: 500,
+                showController: true,
+                autoPlay: true,
+              });
+            } catch (e) {
+              console.error("Error initializing replayer:", e);
+            }
+          }
+        }, 100);
+      };
+      
+      return (
+        <div className="container py-4">
+          <h1 className="mb-4">Web Session Recorder & Replayer</h1>
+          
+          <div className="row mb-4">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title">Recording Controls</h5>
+                </div>
+                <div className="card-body">
+                  {!recording ? (
+                    <button 
+                      className="btn btn-primary me-2" 
+                      onClick={startRecording}
+                    >
+                      Start Recording
+                    </button>
+                  ) : (
+                    <>
+                      <button 
+                        className="btn btn-danger me-2" 
+                        onClick={stopRecording}
+                      >
+                        Stop Recording
+                      </button>
+                      {recording && <div className="recording-indicator"></div>}
+                    </>
+                  )}
+                  
+                  <button 
+                    className="btn btn-success me-2" 
+                    onClick={saveRecording}
+                    disabled={events.length === 0 || recording}
+                  >
+                    Save Recording
+                  </button>
+                  
+                  <span className="ms-2">
+                    {events.length > 0 && `${events.length} events recorded`}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-header">
+                  <h5 className="card-title">Saved Sessions</h5>
+                </div>
+                <div className="card-body" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {savedSessions.length === 0 ? (
+                    <p className="text-muted">No saved sessions yet.</p>
+                  ) : (
+                    <ul className="list-group">
+                      {savedSessions.map(session => (
+                        <li key={session.id} className="list-group-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>{session.name}</strong>
+                            <br />
+                            <small className="text-muted">
+                              {new Date(session.timestamp).toLocaleString()} • 
+                              {session.events.length} events
+                            </small>
+                          </div>
+                          <div>
+                            <button 
+                              className="btn btn-sm btn-primary me-2"
+                              onClick={() => playSession(session)}
+                            >
+                              Play
+                            </button>
+                            <button 
+                              className="btn btn-sm btn-danger"
+                              onClick={() => deleteSession(session.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="row">
+            <div className="col-md-6">
+              <h4>Demo Area (Interaction Sandbox)</h4>
+              <p className="text-muted">Try interacting with elements below to record them.</p>
+              <div className="demo-area">
+                <div className="mb-3">
+                  <label htmlFor="demoInput" className="form-label">Sample Input</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    id="demoInput" 
+                    placeholder="Type something here..."
+                  />
+                </div>
+                
+                <div className="mb-3">
+                  <label htmlFor="demoTextarea" className="form-label">Sample Textarea</label>
+                  <textarea 
+                    className="form-control" 
+                    id="demoTextarea" 
+                    rows="3"
+                    placeholder="Write some text..."
+                  ></textarea>
+                </div>
+                
+                <div className="mb-3">
+                  <div className="form-check">
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      id="demoCheckbox"
+                    />
+                    <label className="form-check-label" htmlFor="demoCheckbox">
+                      Sample checkbox
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="mb-3">
+                  <label htmlFor="demoSelect" className="form-label">Sample Select</label>
+                  <select className="form-select" id="demoSelect">
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                  </select>
+                </div>
+                
+                <div className="mb-3">
+                  <button className="btn btn-outline-primary me-2">Sample Button 1</button>
+                  <button className="btn btn-outline-secondary me-2">Sample Button 2</button>
+                  <button className="btn btn-outline-success">Sample Button 3</button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-md-6">
+              <h4>Replay Area</h4>
+              <p className="text-muted">
+                {replayMode 
+                  ? `Playing: ${currentSession?.name}` 
+                  : "Select a session from the list above to replay it here."}
+              </p>
+              <div className="replay-container" ref={replayContainerRef}>
+                {!replayMode && (
+                  <div className="d-flex justify-content-center align-items-center h-100 text-muted">
+                    No session selected for replay
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+    
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
