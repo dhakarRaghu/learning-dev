@@ -39,3 +39,7 @@ iframe {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

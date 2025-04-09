@@ -19,10 +19,10 @@ window.addEventListener("load", async () => {
     return;
   }
 
-  // Initially load App.jsx content into textarea
-  textareaEl.value = files["App.jsx"].file.contents;
+  // Initially load App.tsx content into textarea
+  textareaEl.value = files["App.tsx"].file.contents;
   textareaEl.addEventListener("input", (e) => {
-    writeFile("/App.jsx", e.currentTarget.value);
+    writeFile("/App.tsx", e.currentTarget.value);
   });
 
   // Boot the WebContainer
