@@ -5,19 +5,24 @@ import { files } from "./files";
 /** @type {import('@webcontainer/api').WebContainer} */
 let webcontainerInstance;
 
-const textareaEl = document.querySelector("textarea");
-const iframeEl = document.querySelector("iframe");
+const textareaEl = document.querySelector("#code");
+const iframeEl = document.querySelector("#preview");
 
 /** @param {string} content */
-async function writeIndexJS(content) {
-  await webcontainerInstance.fs.writeFile("/index.js", content);
+async function writeFile(path, content) {
+  await webcontainerInstance.fs.writeFile(path, content);
 }
 
 window.addEventListener("load", async () => {
-  textareaEl.value = files["index.js"].file.contents;
+  if (!textareaEl || !iframeEl) {
+    console.error("Textarea or Iframe element not found");
+    return;
+  }
 
+  // Initially load App.jsx content into textarea
+  textareaEl.value = files["App.jsx"].file.contents;
   textareaEl.addEventListener("input", (e) => {
-    writeIndexJS(e.currentTarget.value);
+    writeFile("/App.jsx", e.currentTarget.value);
   });
 
   // Boot the WebContainer
@@ -32,10 +37,7 @@ window.addEventListener("load", async () => {
     throw new Error("Installation failed");
   }
 
-  const packageJSON = await webcontainerInstance.fs.readFile(
-    "package.json",
-    "utf-8"
-  );
+  const packageJSON = await webcontainerInstance.fs.readFile("package.json", "utf-8");
   console.log(packageJSON);
 
   // Start dev server
@@ -53,11 +55,11 @@ async function installDependencies() {
     })
   );
 
-  return installProcess.exit;
+  return await installProcess.exit;
 }
 
 async function startDevServer() {
-  const serverProcess = await webcontainerInstance.spawn("npm", ["run", "start"]);
+  const serverProcess = await webcontainerInstance.spawn("npm", ["run", "dev"]);
 
   serverProcess.output.pipeTo(
     new WritableStream({
@@ -68,6 +70,15 @@ async function startDevServer() {
   );
 
   webcontainerInstance.on("server-ready", (port, url) => {
+    console.log(`Server ready at ${url}`);
     iframeEl.src = url;
+  });
+
+  // Handle server process exit
+  serverProcess.exit.then((code) => {
+    console.log(`Server process exited with code: ${code}`);
+    if (code !== 0) {
+      console.error("Server crashed");
+    }
   });
 }
